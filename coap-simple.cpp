@@ -127,6 +127,14 @@ uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, int payloa
     return this->send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen);
 }
 
+uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, int payloadlen, char *queryOption) {
+    return this->send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen, (uint8_t *)queryOption, strlen(queryOption));
+}
+
+uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, int payloadlen, char *queryOption, uint32_t queryOptionlen) {
+    return this->send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen, (uint8_t *)queryOption, queryOptionlen);
+}
+
 uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen) {
     return this->send(ip, port, url, COAP_CON, COAP_PUT, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE);
 }
