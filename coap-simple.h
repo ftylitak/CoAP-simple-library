@@ -111,6 +111,8 @@ class CoapOption {
 
 class CoapPacket {
     public:
+        CoapPacket();
+
 		uint8_t type;
 		uint8_t code;
 		uint8_t *token;
@@ -118,11 +120,16 @@ class CoapPacket {
 		uint8_t *payload;
 		uint16_t payloadlen;
 		uint16_t messageid;
+        uint8_t contentType;
+        uint8_t *query;
+        uint16_t querylen;
 		
 		uint8_t optionnum;
 		CoapOption options[MAX_OPTION_NUM];
 
 		void addOption(uint8_t number, uint8_t length, uint8_t *opt_payload);
+        void setUriHost(const IPAddress &address);
+        void setUriPath(const char* url);
 };
 typedef void (*callback)(CoapPacket &, IPAddress, int);
 
@@ -192,6 +199,7 @@ class Coap {
         uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen);
         uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type);
         uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type, uint8_t *queryOption, uint16_t queryOptionlen);
+        uint16_t sendEx(IPAddress ip, int port, char *url, CoapPacket &packet);
 
         bool loop();
 };

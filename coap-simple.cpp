@@ -3,6 +3,20 @@
 
 #define LOGGING
 
+CoapPacket::CoapPacket() : 
+  	type(COAP_CON),
+    code(COAP_GET),
+    token(NULL),
+	tokenlen(0),
+	payload(NULL),
+	payloadlen(0),
+	messageid(0),
+    contentType(COAP_NONE),
+    optionnum(0),
+    query(NULL),
+    querylen(0)
+{}
+
 void CoapPacket::addOption(uint8_t number, uint8_t length, uint8_t *opt_payload)
 {
     options[optionnum].number = number;
@@ -10,6 +24,29 @@ void CoapPacket::addOption(uint8_t number, uint8_t length, uint8_t *opt_payload)
     options[optionnum].buffer = opt_payload;
 
     ++optionnum;
+}
+
+void CoapPacket::setUriHost(const IPAddress &address)
+{
+    // use URI_HOST UIR_PATH
+    String ipaddress = String(address[0]) + String(".") + String(address[1]) + String(".") + String(address[2]) + String(".") + String(address[3]); 
+	addOption(COAP_URI_HOST, ipaddress.length(), (uint8_t *)ipaddress.c_str());
+}
+
+void CoapPacket::setUriPath(const char* url)
+{
+    // parse url
+    int idx = 0;
+    for (int i = 0; i < strlen(url); i++) {
+        if (url[i] == '/') {
+			addOption(COAP_URI_PATH, i-idx, (uint8_t *)(url + idx));
+            idx = i + 1;
+        }
+    }
+
+    if (idx <= strlen(url)) {
+		addOption(COAP_URI_PATH, strlen(url)-idx, (uint8_t *)(url + idx));
+    }
 }
 
 Coap::Coap(
@@ -154,39 +191,31 @@ uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METH
     packet.tokenlen = tokenlen;
     packet.payload = payload;
     packet.payloadlen = payloadlen;
+    packet.contentType = content_type;
+    packet.query = queryOption;
+    packet.querylen = queryOptionlen;
+
+    return sendEx(ip, port, url, packet);
+}
+
+uint16_t Coap::sendEx(IPAddress ip, int port, char *url, CoapPacket &packet)
+{
     packet.optionnum = 0;
     packet.messageid = rand();
+    packet.setUriHost(ip);
+    packet.setUriPath(url);
 
-    // use URI_HOST UIR_PATH
-    String ipaddress = String(ip[0]) + String(".") + String(ip[1]) + String(".") + String(ip[2]) + String(".") + String(ip[3]); 
-	packet.addOption(COAP_URI_HOST, ipaddress.length(), (uint8_t *)ipaddress.c_str());
-
-    // parse url
-    int idx = 0;
-    for (int i = 0; i < strlen(url); i++) {
-        if (url[i] == '/') {
-			packet.addOption(COAP_URI_PATH, i-idx, (uint8_t *)(url + idx));
-            idx = i + 1;
-        }
-    }
-
-    if (idx <= strlen(url)) {
-		packet.addOption(COAP_URI_PATH, strlen(url)-idx, (uint8_t *)(url + idx));
-    }
-
-	// if Content-Format option
-	uint8_t optionBuffer[2] {0};
-	if (content_type != COAP_NONE) {
-		optionBuffer[0] = ((uint16_t)content_type & 0xFF00) >> 8;
-		optionBuffer[1] = ((uint16_t)content_type & 0x00FF) ;
+    	uint8_t optionBuffer[2] {0};
+	if (packet.contentType != COAP_NONE) {
+		optionBuffer[0] = ((uint16_t)packet.contentType & 0xFF00) >> 8;
+		optionBuffer[1] = ((uint16_t)packet.contentType & 0x00FF) ;
 		packet.addOption(COAP_CONTENT_FORMAT, 2, optionBuffer);
 	}
 
-    if(queryOption && queryOptionlen > 0) {
-        packet.addOption(COAP_URI_QUERY, queryOptionlen, queryOption);
+    if(packet.query && packet.querylen > 0) {
+        packet.addOption(COAP_URI_QUERY, packet.querylen, packet.query);
     }
 
-    // send packet
     return sendPacket(packet, ip, port);
 }
 
