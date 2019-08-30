@@ -123,27 +123,27 @@ uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload) {
     return this->send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, strlen(payload));
 }
 
-uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, int payloadlen) {
+uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen) {
     return this->send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen);
 }
 
-uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, int payloadlen, char *queryOption) {
-    return this->send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen, (uint8_t *)queryOption, strlen(queryOption));
+uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen, char *queryOption) {
+    return this->send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE, (uint8_t *)queryOption, strlen(queryOption));
 }
 
-uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, int payloadlen, char *queryOption, uint32_t queryOptionlen) {
-    return this->send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen, (uint8_t *)queryOption, queryOptionlen);
+uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen, char *queryOption, uint16_t queryOptionlen) {
+    return this->send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE, (uint8_t *)queryOption, queryOptionlen);
 }
 
-uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen) {
+uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen) {
     return this->send(ip, port, url, COAP_CON, COAP_PUT, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE);
 }
 
-uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen, COAP_CONTENT_TYPE content_type){
+uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type){
     return this->send(ip, port, url, COAP_CON, COAP_PUT, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE, NULL, 0); 
 }
 
-uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen, COAP_CONTENT_TYPE content_type, uint8_t *queryOption, uint32_t queryOptionlen) {
+uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type, uint8_t *queryOption, uint16_t queryOptionlen) {
 
     // make packet
     CoapPacket packet;
@@ -336,12 +336,12 @@ uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageid, char *pa
     this->sendResponse(ip, port, messageid, payload, strlen(payload), COAP_CONTENT, COAP_TEXT_PLAIN, NULL, 0);
 }
 
-uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, int payloadlen) {
+uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen) {
     this->sendResponse(ip, port, messageid, payload, payloadlen, COAP_CONTENT, COAP_TEXT_PLAIN, NULL, 0);
 }
 
 
-uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, int payloadlen,
+uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen,
                 COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE type, uint8_t *token, int tokenlen) {
     // make packet
     CoapPacket packet;

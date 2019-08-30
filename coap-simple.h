@@ -116,7 +116,7 @@ class CoapPacket {
 		uint8_t *token;
 		uint8_t tokenlen;
 		uint8_t *payload;
-		uint8_t payloadlen;
+		uint16_t payloadlen;
 		uint16_t messageid;
 		
 		uint8_t optionnum;
@@ -179,19 +179,19 @@ class Coap {
         void server(callback c, String url) { uri.add(c, url); }
         uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid);
         uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload);
-        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, int payloadlen);
-        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, int payloadlen, COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE type, uint8_t *token, int tokenlen);
+        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen);
+        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen, COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE type, uint8_t *token, int tokenlen);
         
         uint16_t get(IPAddress ip, int port, char *url);
         uint16_t put(IPAddress ip, int port, char *url, char *payload);
         uint16_t put(IPAddress ip, int port, char *url, char *payload, int payloadlen);
         uint16_t post(IPAddress ip, int port, char *url, char *payload);
-        uint16_t post(IPAddress ip, int port, char *url, char *payload, int payloadlen);
-        uint16_t post(IPAddress ip, int port, char *url, char *payload, int payloadlen, char *queryOption);
-        uint16_t post(IPAddress ip, int port, char *url, char *payload, int payloadlen, char *queryOption, uint32_t queryOptionlen);
-        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen);
-        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen, COAP_CONTENT_TYPE content_type);
-        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen, COAP_CONTENT_TYPE content_type, uint8_t *queryOption, uint32_t queryOptionlen);
+        uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen);
+        uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen, char *queryOption);
+        uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen, char *queryOption, uint16_t queryOptionlen);
+        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen);
+        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type);
+        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type, uint8_t *queryOption, uint16_t queryOptionlen);
 
         bool loop();
 };
