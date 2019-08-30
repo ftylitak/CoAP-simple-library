@@ -131,7 +131,11 @@ uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METH
     return this->send(ip, port, url, COAP_CON, COAP_PUT, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE);
 }
 
-uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen, COAP_CONTENT_TYPE content_type) {
+uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen, COAP_CONTENT_TYPE content_type){
+    return this->send(ip, port, url, COAP_CON, COAP_PUT, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE, NULL, 0); 
+}
+
+uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen, COAP_CONTENT_TYPE content_type, uint8_t *queryOption, uint32_t queryOptionlen) {
 
     // make packet
     CoapPacket packet;
@@ -169,6 +173,10 @@ uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METH
 		optionBuffer[1] = ((uint16_t)content_type & 0x00FF) ;
 		packet.addOption(COAP_CONTENT_FORMAT, 2, optionBuffer);
 	}
+
+    if(queryOption && queryOptionlen > 0) {
+        packet.addOption(COAP_URI_QUERY, queryOptionlen, queryOption);
+    }
 
     // send packet
     return this->sendPacket(packet, ip, port);
