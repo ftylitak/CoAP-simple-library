@@ -19,9 +19,9 @@ Coap coap(Udp);
 void callback_response(CoapPacket &packet, IPAddress ip, int port) {
   Serial.println("[Coap Response got]");
 
-  char p[packet.payloadLen + 1];
-  memcpy(p, packet.payload, packet.payloadLen);
-  p[packet.payloadLen] = NULL;
+  char p[packet.payloadlen + 1];
+  memcpy(p, packet.payload, packet.payloadlen);
+  p[packet.payloadlen] = NULL;
 
   Serial.println(p);
 }
@@ -107,10 +107,10 @@ void sendPostRequestCustom() {
   CoapPacket packet;
   packet.code = COAP_POST;
   packet.payload = (uint8_t*)payload;
-  packet.payloadLen = strlen(payload);
+  packet.payloadlen = strlen(payload);
   packet.contentType = COAP_TEXT_PLAIN;
   packet.query = (uint8_t*)query;
-  packet.queryLen = strlen(query);
+  packet.querylen = strlen(query);
 
   int msgid = coap.sendEx(IPAddress(127, 0, 0, 1), 5683, url, packet);
 
