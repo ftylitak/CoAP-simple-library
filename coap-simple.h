@@ -191,7 +191,7 @@ class Coap {
         
         uint16_t get(IPAddress ip, int port, char *url);
         uint16_t put(IPAddress ip, int port, char *url, char *payload);
-        uint16_t put(IPAddress ip, int port, char *url, char *payload, int payloadlen);
+        uint16_t put(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen);
         uint16_t post(IPAddress ip, int port, char *url, char *payload);
         uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen);
         uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen, char *queryOption);
