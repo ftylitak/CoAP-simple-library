@@ -7,23 +7,23 @@ CoapPacket::CoapPacket() :
   	type(COAP_CON),
     code(COAP_GET),
     token(NULL),
-	tokenlen(0),
+	tokenLen(0),
 	payload(NULL),
-	payloadlen(0),
-	messageid(0),
+	payloadLen(0),
+	messageId(0),
     contentType(COAP_NONE),
-    optionnum(0),
+    optionNum(0),
     query(NULL),
-    querylen(0)
+    queryLen(0)
 {}
 
-void CoapPacket::addOption(uint8_t number, uint8_t length, uint8_t *opt_payload)
+void CoapPacket::addOption(uint8_t number, uint8_t length, uint8_t *optPayload)
 {
-    options[optionnum].number = number;
-    options[optionnum].length = length;
-    options[optionnum].buffer = opt_payload;
+    options[optionNum].number = number;
+    options[optionNum].length = length;
+    options[optionNum].buffer = optPayload;
 
-    ++optionnum;
+    ++optionNum;
 }
 
 void CoapPacket::setUriHost(const IPAddress &address)
@@ -52,7 +52,7 @@ void CoapPacket::setUriPath(const char* url)
 Coap::Coap(
     UDP& udp
 ) {
-    _udp = &udp;
+    udp_ = &udp;
 }
 
 bool Coap::start() {
@@ -61,7 +61,7 @@ bool Coap::start() {
 }
 
 bool Coap::start(int port) {
-    _udp->begin(port);
+    udp_->begin(port);
     return true;
 }
 
@@ -72,45 +72,45 @@ uint16_t Coap::sendPacket(CoapPacket &packet, IPAddress ip) {
 uint16_t Coap::sendPacket(CoapPacket &packet, IPAddress ip, int port) {
     uint8_t buffer[BUF_MAX_SIZE];
     uint8_t *p = buffer;
-    uint16_t running_delta = 0;
+    uint16_t runningDelta = 0;
     uint16_t packetSize = 0;
 
     // make coap packet base header
     *p = 0x01 << 6;
     *p |= (packet.type & 0x03) << 4;
-    *p++ |= (packet.tokenlen & 0x0F);
+    *p++ |= (packet.tokenLen & 0x0F);
     *p++ = packet.code;
-    *p++ = (packet.messageid >> 8);
-    *p++ = (packet.messageid & 0xFF);
+    *p++ = (packet.messageId >> 8);
+    *p++ = (packet.messageId & 0xFF);
     p = buffer + COAP_HEADER_SIZE;
     packetSize += 4;
 
     // make token
-    if (packet.token != NULL && packet.tokenlen <= 0x0F) {
-        memcpy(p, packet.token, packet.tokenlen);
-        p += packet.tokenlen;
-        packetSize += packet.tokenlen;
+    if (packet.token != NULL && packet.tokenLen <= 0x0F) {
+        memcpy(p, packet.token, packet.tokenLen);
+        p += packet.tokenLen;
+        packetSize += packet.tokenLen;
     }
 
     // make option header
-    for (int i = 0; i < packet.optionnum; i++)  {
-        uint32_t optdelta;
+    for (int i = 0; i < packet.optionNum; i++)  {
+        uint32_t optDelta;
         uint8_t len, delta;
 
         if (packetSize + 5 + packet.options[i].length >= BUF_MAX_SIZE) {
             return 0;
         }
-        optdelta = packet.options[i].number - running_delta;
-        COAP_OPTION_DELTA(optdelta, &delta);
+        optDelta = packet.options[i].number - runningDelta;
+        COAP_OPTION_DELTA(optDelta, &delta);
         COAP_OPTION_DELTA((uint32_t)packet.options[i].length, &len);
 
         *p++ = (0xFF & (delta << 4 | len));
         if (delta == 13) {
-            *p++ = (optdelta - 13);
+            *p++ = (optDelta - 13);
             packetSize++;
         } else if (delta == 14) {
-            *p++ = ((optdelta - 269) >> 8);
-            *p++ = (0xFF & (optdelta - 269));
+            *p++ = ((optDelta - 269) >> 8);
+            *p++ = (0xFF & (optDelta - 269));
             packetSize+=2;
         } if (len == 13) {
             *p++ = (packet.options[i].length - 13);
@@ -124,24 +124,24 @@ uint16_t Coap::sendPacket(CoapPacket &packet, IPAddress ip, int port) {
         memcpy(p, packet.options[i].buffer, packet.options[i].length);
         p += packet.options[i].length;
         packetSize += packet.options[i].length + 1;
-        running_delta = packet.options[i].number;
+        runningDelta = packet.options[i].number;
     }
 
     // make payload
-    if (packet.payloadlen > 0) {
-        if ((packetSize + 1 + packet.payloadlen) >= BUF_MAX_SIZE) {
+    if (packet.payloadLen > 0) {
+        if ((packetSize + 1 + packet.payloadLen) >= BUF_MAX_SIZE) {
             return 0;
         }
         *p++ = 0xFF;
-        memcpy(p, packet.payload, packet.payloadlen);
-        packetSize += 1 + packet.payloadlen;
+        memcpy(p, packet.payload, packet.payloadLen);
+        packetSize += 1 + packet.payloadLen;
     }
 
-    _udp->beginPacket(ip, port);
-    _udp->write(buffer, packetSize);
-    _udp->endPacket();
+    udp_->beginPacket(ip, port);
+    udp_->write(buffer, packetSize);
+    udp_->endPacket();
 
-    return packet.messageid;
+    return packet.messageId;
 }
 
 uint16_t Coap::get(IPAddress ip, int port, char *url) {
@@ -152,35 +152,35 @@ uint16_t Coap::put(IPAddress ip, int port, char *url, char *payload) {
     return send(ip, port, url, COAP_CON, COAP_PUT, NULL, 0, (uint8_t *)payload, strlen(payload));
 }
 
-uint16_t Coap::put(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen) {
-    return send(ip, port, url, COAP_CON, COAP_PUT, NULL, 0, (uint8_t *)payload, payloadlen);
+uint16_t Coap::put(IPAddress ip, int port, char *url, char *payload, uint16_t payloadLen) {
+    return send(ip, port, url, COAP_CON, COAP_PUT, NULL, 0, (uint8_t *)payload, payloadLen);
 }
 
 uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload) {
     return send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, strlen(payload));
 }
 
-uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen) {
-    return send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen);
+uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadLen) {
+    return send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadLen);
 }
 
-uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen, char *queryOption) {
-    return send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE, (uint8_t *)queryOption, strlen(queryOption));
+uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadLen, char *queryOption) {
+    return send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadLen, COAP_NONE, (uint8_t *)queryOption, strlen(queryOption));
 }
 
-uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen, char *queryOption, uint16_t queryOptionlen) {
-    return send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE, (uint8_t *)queryOption, queryOptionlen);
+uint16_t Coap::post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadLen, char *queryOption, uint16_t queryOptionlLen) {
+    return send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadLen, COAP_NONE, (uint8_t *)queryOption, queryOptionlLen);
 }
 
-uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen) {
-    return send(ip, port, url, type, method, NULL, 0, (uint8_t *)payload, payloadlen, COAP_NONE);
+uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenLen, uint8_t *payload, uint16_t payloadLen) {
+    return send(ip, port, url, type, method, NULL, 0, (uint8_t *)payload, payloadLen, COAP_NONE);
 }
 
-uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type){
-    return send(ip, port, url, type, method, NULL, 0, (uint8_t *)payload, payloadlen, content_type, NULL, 0); 
+uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenLen, uint8_t *payload, uint16_t payloadLen, COAP_CONTENT_TYPE contentType){
+    return send(ip, port, url, type, method, NULL, 0, (uint8_t *)payload, payloadLen, contentType, NULL, 0); 
 }
 
-uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type, uint8_t *queryOption, uint16_t queryOptionlen) {
+uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenLen, uint8_t *payload, uint16_t payloadLen, COAP_CONTENT_TYPE contentType, uint8_t *queryOption, uint16_t queryOptionlLen) {
 
     // make packet
     CoapPacket packet;
@@ -188,20 +188,20 @@ uint16_t Coap::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METH
     packet.type = type;
     packet.code = method;
     packet.token = token;
-    packet.tokenlen = tokenlen;
+    packet.tokenLen = tokenLen;
     packet.payload = payload;
-    packet.payloadlen = payloadlen;
-    packet.contentType = content_type;
+    packet.payloadLen = payloadLen;
+    packet.contentType = contentType;
     packet.query = queryOption;
-    packet.querylen = queryOptionlen;
+    packet.queryLen = queryOptionlLen;
 
     return sendEx(ip, port, url, packet);
 }
 
 uint16_t Coap::sendEx(IPAddress ip, int port, char *url, CoapPacket &packet)
 {
-    packet.optionnum = 0;
-    packet.messageid = rand();
+    packet.optionNum = 0;
+    packet.messageId = rand();
     packet.setUriHost(ip);
     packet.setUriPath(url);
 
@@ -212,54 +212,54 @@ uint16_t Coap::sendEx(IPAddress ip, int port, char *url, CoapPacket &packet)
 		packet.addOption(COAP_CONTENT_FORMAT, 2, optionBuffer);
 	}
 
-    if(packet.query && packet.querylen > 0) {
-        packet.addOption(COAP_URI_QUERY, packet.querylen, packet.query);
+    if(packet.query && packet.queryLen > 0) {
+        packet.addOption(COAP_URI_QUERY, packet.queryLen, packet.query);
     }
 
     return sendPacket(packet, ip, port);
 }
 
-int Coap::parseOption(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen) {
+int Coap::parseOption(CoapOption *option, uint16_t *runningDelta, uint8_t **buf, size_t bufLen) {
     uint8_t *p = *buf;
-    uint8_t headlen = 1;
+    uint8_t headLen = 1;
     uint16_t len, delta;
 
-    if (buflen < headlen) return -1;
+    if (bufLen < headLen) return -1;
 
     delta = (p[0] & 0xF0) >> 4;
     len = p[0] & 0x0F;
 
     if (delta == 13) {
-        headlen++;
-        if (buflen < headlen) return -1;
+        headLen++;
+        if (bufLen < headLen) return -1;
         delta = p[1] + 13;
         p++;
     } else if (delta == 14) {
-        headlen += 2;
-        if (buflen < headlen) return -1;
+        headLen += 2;
+        if (bufLen < headLen) return -1;
         delta = ((p[1] << 8) | p[2]) + 269;
         p+=2;
     } else if (delta == 15) return -1;
 
     if (len == 13) {
-        headlen++;
-        if (buflen < headlen) return -1;
+        headLen++;
+        if (bufLen < headLen) return -1;
         len = p[1] + 13;
         p++;
     } else if (len == 14) {
-        headlen += 2;
-        if (buflen < headlen) return -1;
+        headLen += 2;
+        if (bufLen < headLen) return -1;
         len = ((p[1] << 8) | p[2]) + 269;
         p+=2;
     } else if (len == 15)
         return -1;
 
-    if ((p + 1 + len) > (*buf + buflen))  return -1;
-    option->number = delta + *running_delta;
+    if ((p + 1 + len) > (*buf + bufLen))  return -1;
+    option->number = delta + *runningDelta;
     option->buffer = p+1;
     option->length = len;
     *buf = p + 1 + len;
-    *running_delta += delta;
+    *runningDelta += delta;
 
     return 0;
 }
@@ -267,122 +267,122 @@ int Coap::parseOption(CoapOption *option, uint16_t *running_delta, uint8_t **buf
 bool Coap::loop() {
 
     uint8_t buffer[BUF_MAX_SIZE];
-    int32_t packetlen = _udp->parsePacket();
+    int32_t packetLen = udp_->parsePacket();
 
-    while (packetlen > 0) {
-        packetlen = _udp->read(buffer, packetlen >= BUF_MAX_SIZE ? BUF_MAX_SIZE : packetlen);
+    while (packetLen > 0) {
+        packetLen = udp_->read(buffer, packetLen >= BUF_MAX_SIZE ? BUF_MAX_SIZE : packetLen);
 
         CoapPacket packet;
 
         // parse coap packet header
-        if (packetlen < COAP_HEADER_SIZE || (((buffer[0] & 0xC0) >> 6) != 1)) {
-            packetlen = _udp->parsePacket();
+        if (packetLen < COAP_HEADER_SIZE || (((buffer[0] & 0xC0) >> 6) != 1)) {
+            packetLen = udp_->parsePacket();
             continue;
         }
 
         packet.type = (buffer[0] & 0x30) >> 4;
-        packet.tokenlen = buffer[0] & 0x0F;
+        packet.tokenLen = buffer[0] & 0x0F;
         packet.code = buffer[1];
-        packet.messageid = 0xFF00 & (buffer[2] << 8);
-        packet.messageid |= 0x00FF & buffer[3];
+        packet.messageId = 0xFF00 & (buffer[2] << 8);
+        packet.messageId |= 0x00FF & buffer[3];
 
-        if (packet.tokenlen == 0)  packet.token = NULL;
-        else if (packet.tokenlen <= 8)  packet.token = buffer + 4;
+        if (packet.tokenLen == 0)  packet.token = NULL;
+        else if (packet.tokenLen <= 8)  packet.token = buffer + 4;
         else {
-            packetlen = _udp->parsePacket();
+            packetLen = udp_->parsePacket();
             continue;
         }
 
         // parse packet options/payload
-        if (COAP_HEADER_SIZE + packet.tokenlen < packetlen) {
+        if (COAP_HEADER_SIZE + packet.tokenLen < packetLen) {
             int optionIndex = 0;
             uint16_t delta = 0;
-            uint8_t *end = buffer + packetlen;
-            uint8_t *p = buffer + COAP_HEADER_SIZE + packet.tokenlen;
+            uint8_t *end = buffer + packetLen;
+            uint8_t *p = buffer + COAP_HEADER_SIZE + packet.tokenLen;
             while(optionIndex < MAX_OPTION_NUM && *p != 0xFF && p < end) {
                 packet.options[optionIndex];
                 if (0 != parseOption(&packet.options[optionIndex], &delta, &p, end-p))
                     return false;
                 optionIndex++;
             }
-            packet.optionnum = optionIndex;
+            packet.optionNum = optionIndex;
 
             if (p+1 < end && *p == 0xFF) {
                 packet.payload = p+1;
-                packet.payloadlen = end-(p+1);
+                packet.payloadLen = end-(p+1);
             } else {
                 packet.payload = NULL;
-                packet.payloadlen= 0;
+                packet.payloadLen= 0;
             }
         }
 
         if (packet.type == COAP_ACK) {
             // call response function
-            resp(packet, _udp->remoteIP(), _udp->remotePort());
+            resp_(packet, udp_->remoteIP(), udp_->remotePort());
 
         } else {
             
             String url = "";
             // call endpoint url function
-            for (int i = 0; i < packet.optionnum; i++) {
+            for (int i = 0; i < packet.optionNum; i++) {
                 if (packet.options[i].number == COAP_URI_PATH && packet.options[i].length > 0) {
-                    char urlname[packet.options[i].length + 1];
-                    memcpy(urlname, packet.options[i].buffer, packet.options[i].length);
-                    urlname[packet.options[i].length] = NULL;
+                    char urlName[packet.options[i].length + 1];
+                    memcpy(urlName, packet.options[i].buffer, packet.options[i].length);
+                    urlName[packet.options[i].length] = NULL;
                     if(url.length() > 0)
                       url += "/";
-                    url += urlname;
+                    url += urlName;
                 }
             }        
 
-            if (!uri.find(url)) {
-                sendResponse(_udp->remoteIP(), _udp->remotePort(), packet.messageid, NULL, 0,
+            if (!uri_.find(url)) {
+                sendResponse(udp_->remoteIP(), udp_->remotePort(), packet.messageId, NULL, 0,
                         COAP_NOT_FOUNT, COAP_NONE, NULL, 0);
             } else {
-                uri.find(url)(packet, _udp->remoteIP(), _udp->remotePort());
+                uri_.find(url)(packet, udp_->remoteIP(), udp_->remotePort());
             }
         }
 
         /* this type check did not use.
         if (packet.type == COAP_CON) {
             // send response 
-             sendResponse(_udp->remoteIP(), _udp->remotePort(), packet.messageid);
+             sendResponse(udp_->remoteIP(), udp_->remotePort(), packet.messageId);
         }
          */
 
         // next packet
-        packetlen = _udp->parsePacket();
+        packetLen = udp_->parsePacket();
     }
 
     return true;
 }
 
-uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageid) {
-    return sendResponse(ip, port, messageid, NULL, 0, COAP_CONTENT, COAP_TEXT_PLAIN, NULL, 0);
+uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageId) {
+    return sendResponse(ip, port, messageId, NULL, 0, COAP_CONTENT, COAP_TEXT_PLAIN, NULL, 0);
 }
 
-uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload) {
-    return sendResponse(ip, port, messageid, payload, strlen(payload), COAP_CONTENT, COAP_TEXT_PLAIN, NULL, 0);
+uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageId, char *payload) {
+    return sendResponse(ip, port, messageId, payload, strlen(payload), COAP_CONTENT, COAP_TEXT_PLAIN, NULL, 0);
 }
 
-uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen) {
-    return sendResponse(ip, port, messageid, payload, payloadlen, COAP_CONTENT, COAP_TEXT_PLAIN, NULL, 0);
+uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageId, char *payload, uint16_t payloadLen) {
+    return sendResponse(ip, port, messageId, payload, payloadLen, COAP_CONTENT, COAP_TEXT_PLAIN, NULL, 0);
 }
 
 
-uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen,
-                COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE type, uint8_t *token, int tokenlen) {
+uint16_t Coap::sendResponse(IPAddress ip, int port, uint16_t messageId, char *payload, uint16_t payloadLen,
+                COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE type, uint8_t *token, int tokenLen) {
     // make packet
     CoapPacket packet;
 
     packet.type = COAP_ACK;
     packet.code = code;
     packet.token = token;
-    packet.tokenlen = tokenlen;
+    packet.tokenLen = tokenLen;
     packet.payload = (uint8_t *)payload;
-    packet.payloadlen = payloadlen;
-    packet.optionnum = 0;
-    packet.messageid = messageid;
+    packet.payloadLen = payloadLen;
+    packet.optionNum = 0;
+    packet.messageId = messageId;
 
     // if more options?
     uint8_t optionBuffer[2] = {0};

@@ -116,18 +116,18 @@ class CoapPacket {
 		uint8_t type;
 		uint8_t code;
 		uint8_t *token;
-		uint8_t tokenlen;
+		uint8_t tokenLen;
 		uint8_t *payload;
-		uint16_t payloadlen;
-		uint16_t messageid;
+		uint16_t payloadLen;
+		uint16_t messageId;
         uint8_t contentType;
         uint8_t *query;
-        uint16_t querylen;
+        uint16_t queryLen;
 		
-		uint8_t optionnum;
+		uint8_t optionNum;
 		CoapOption options[MAX_OPTION_NUM];
 
-		void addOption(uint8_t number, uint8_t length, uint8_t *opt_payload);
+		void addOption(uint8_t number, uint8_t length, uint8_t *optPayload);
         void setUriHost(const IPAddress &address);
         void setUriPath(const char* url);
 };
@@ -166,14 +166,13 @@ class CoapUri {
 
 class Coap {
     private:
-        UDP *_udp;
-        CoapUri uri;
-        callback resp;
-        int _port;
+        UDP *udp_;
+        CoapUri uri_;
+        callback resp_;
 
         uint16_t sendPacket(CoapPacket &packet, IPAddress ip);
         uint16_t sendPacket(CoapPacket &packet, IPAddress ip, int port);
-        int parseOption(CoapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
+        int parseOption(CoapOption *option, uint16_t *runningDelta, uint8_t **buf, size_t bufLen);
 
     public:
         Coap(
@@ -181,24 +180,24 @@ class Coap {
         );
         bool start();
         bool start(int port);
-        void response(callback c) { resp = c; }
+        void response(callback c) { resp_ = c; }
         
-        void server(callback c, String url) { uri.add(c, url); }
-        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid);
-        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload);
-        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen);
-        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen, COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE type, uint8_t *token, int tokenlen);
+        void server(callback c, String url) { uri_.add(c, url); }
+        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageId);
+        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageId, char *payload);
+        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageId, char *payload, uint16_t payloadLen);
+        uint16_t sendResponse(IPAddress ip, int port, uint16_t messageId, char *payload, uint16_t payloadLen, COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE type, uint8_t *token, int tokenLen);
         
         uint16_t get(IPAddress ip, int port, char *url);
         uint16_t put(IPAddress ip, int port, char *url, char *payload);
-        uint16_t put(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen);
+        uint16_t put(IPAddress ip, int port, char *url, char *payload, uint16_t payloadLen);
         uint16_t post(IPAddress ip, int port, char *url, char *payload);
-        uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen);
-        uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen, char *queryOption);
-        uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadlen, char *queryOption, uint16_t queryOptionlen);
-        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen);
-        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type);
-        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint16_t payloadlen, COAP_CONTENT_TYPE content_type, uint8_t *queryOption, uint16_t queryOptionlen);
+        uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadLen);
+        uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadLen, char *queryOption);
+        uint16_t post(IPAddress ip, int port, char *url, char *payload, uint16_t payloadLen, char *queryOption, uint16_t queryOptionlLen);
+        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenLen, uint8_t *payload, uint16_t payloadLen);
+        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenLen, uint8_t *payload, uint16_t payloadLen, COAP_CONTENT_TYPE contentType);
+        uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenLen, uint8_t *payload, uint16_t payloadLen, COAP_CONTENT_TYPE contentType, uint8_t *queryOption, uint16_t queryOptionlLen);
         uint16_t sendEx(IPAddress ip, int port, char *url, CoapPacket &packet);
 
         bool loop();

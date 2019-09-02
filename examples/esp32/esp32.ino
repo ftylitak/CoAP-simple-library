@@ -23,9 +23,9 @@ void callback_light(CoapPacket &packet, IPAddress ip, int port) {
   Serial.println("[Light] ON/OFF");
   
   // send response
-  char p[packet.payloadlen + 1];
-  memcpy(p, packet.payload, packet.payloadlen);
-  p[packet.payloadlen] = NULL;
+  char p[packet.payloadLen + 1];
+  memcpy(p, packet.payload, packet.payloadLen);
+  p[packet.payloadLen] = NULL;
   
   String message(p);
 
@@ -36,10 +36,10 @@ void callback_light(CoapPacket &packet, IPAddress ip, int port) {
       
   if (LEDSTATE) {
     digitalWrite(9, HIGH) ; 
-    coap.sendResponse(ip, port, packet.messageid, "1");
+    coap.sendResponse(ip, port, packet.messageId, "1");
   } else { 
     digitalWrite(9, LOW) ; 
-    coap.sendResponse(ip, port, packet.messageid, "0");
+    coap.sendResponse(ip, port, packet.messageId, "0");
   }
 }
 
@@ -47,9 +47,9 @@ void callback_light(CoapPacket &packet, IPAddress ip, int port) {
 void callback_response(CoapPacket &packet, IPAddress ip, int port) {
   Serial.println("[Coap Response got]");
   
-  char p[packet.payloadlen + 1];
-  memcpy(p, packet.payload, packet.payloadlen);
-  p[packet.payloadlen] = NULL;
+  char p[packet.payloadLen + 1];
+  memcpy(p, packet.payload, packet.payloadLen);
+  p[packet.payloadLen] = NULL;
   
   Serial.println(p);
 }

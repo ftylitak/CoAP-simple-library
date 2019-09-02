@@ -18,9 +18,9 @@ Coap coap(Udp);
 void callback_response(CoapPacket &packet, IPAddress ip, int port) {
   Serial.println("[Coap Response got]");
 
-  char p[packet.payloadlen + 1];
-  memcpy(p, packet.payload, packet.payloadlen);
-  p[packet.payloadlen] = NULL;
+  char p[packet.payloadLen + 1];
+  memcpy(p, packet.payload, packet.payloadLen);
+  p[packet.payloadLen] = NULL;
 
   Serial.println(p);
 }
