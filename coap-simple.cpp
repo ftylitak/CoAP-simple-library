@@ -137,11 +137,18 @@ uint16_t Coap::sendPacket(CoapPacket &packet, const IPAddress &ip, int port) {
         packetSize += 1 + packet.payloadlen;
     }
 
-    _udp->beginPacket(ip, port);
-    _udp->write(buffer, packetSize);
-    _udp->endPacket();
+    bool udpOperationStatus = _udp->beginPacket(ip, port);
 
-    return packet.messageid;
+    if(udpOperationStatus)
+        udpOperationStatus &= (_udp->write(buffer, packetSize) > 0);
+
+    if(udpOperationStatus)
+        udpOperationStatus &= _udp->endPacket();
+
+    if(udpOperationStatus)
+        return packet.messageid;
+    else
+        return 0;
 }
 
 uint16_t Coap::get(const IPAddress &ip, int port, const char *url) {
