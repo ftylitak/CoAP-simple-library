@@ -12,9 +12,9 @@ CoapPacket::CoapPacket() :
 	payloadlen(0),
 	messageid(0),
     contentType(COAP_NONE),
-    optionnum(0),
     query(NULL),
-    querylen(0)
+    querylen(0), 
+    optionnum(0)
 {}
 
 void CoapPacket::addOption(uint8_t number, uint8_t length, uint8_t *opt_payload)
@@ -36,8 +36,8 @@ void CoapPacket::setUriHost(const IPAddress &address)
 void CoapPacket::setUriPath(const char* url)
 {
     // parse url
-    int idx = 0;
-    for (int i = 0; i < strlen(url); i++) {
+    size_t idx = 0;
+    for (size_t i = 0; i < strlen(url); i++) {
         if (url[i] == '/') {
 			addOption(COAP_URI_PATH, i-idx, (uint8_t *)(url + idx));
             idx = i + 1;
@@ -74,6 +74,8 @@ uint16_t Coap::sendPacket(CoapPacket &packet, const IPAddress &ip, int port) {
     uint8_t *p = buffer;
     uint16_t running_delta = 0;
     uint16_t packetSize = 0;
+
+    memset(buffer, 0, BUF_MAX_SIZE);
 
     // make coap packet base header
     *p = 0x01 << 6;
@@ -140,9 +142,9 @@ uint16_t Coap::sendPacket(CoapPacket &packet, const IPAddress &ip, int port) {
     bool udpOperationStatus = _udp->beginPacket(ip, port);
 
     if(udpOperationStatus)
-        udpOperationStatus &= (_udp->write(buffer, packetSize) > 0);
+        udpOperationStatus &= (_udp->write(buffer, packetSize) == packetSize);
 
-    if(udpOperationStatus)
+    if(udpOperationStatus) 
         udpOperationStatus &= _udp->endPacket();
 
     if(udpOperationStatus)
@@ -307,7 +309,6 @@ bool Coap::loop() {
             uint8_t *end = buffer + packetlen;
             uint8_t *p = buffer + COAP_HEADER_SIZE + packet.tokenlen;
             while(optionIndex < MAX_OPTION_NUM && *p != 0xFF && p < end) {
-                packet.options[optionIndex];
                 if (0 != parseOption(&packet.options[optionIndex], &delta, &p, end-p))
                     return false;
                 optionIndex++;
@@ -335,7 +336,7 @@ bool Coap::loop() {
                 if (packet.options[i].number == COAP_URI_PATH && packet.options[i].length > 0) {
                     char urlname[packet.options[i].length + 1];
                     memcpy(urlname, packet.options[i].buffer, packet.options[i].length);
-                    urlname[packet.options[i].length] = NULL;
+                    urlname[packet.options[i].length] = '\0';
                     if(url.length() > 0)
                       url += "/";
                     url += urlname;
