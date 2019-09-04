@@ -130,6 +130,8 @@ class CoapPacket {
 		void addOption(uint8_t number, uint8_t length, uint8_t *opt_payload);
         void setUriHost(const IPAddress &address);
         void setUriPath(const char* url);
+
+        String toString();
 };
 typedef void (*callback)(CoapPacket &, IPAddress, int);
 
@@ -181,6 +183,7 @@ class Coap {
         );
         bool start();
         bool start(int port);
+        void stop();
         void response(callback c) { resp = c; }
         
         void server(callback c, String url) { uri.add(c, url); }

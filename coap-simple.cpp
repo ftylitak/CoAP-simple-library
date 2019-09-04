@@ -49,6 +49,46 @@ void CoapPacket::setUriPath(const char* url)
     }
 }
 
+String CoapPacket::toString() 
+{
+    String result("");
+
+    result += "type: ";
+    result += type;
+    result += ", code: ";
+    result += code;
+    result += ", messageid: ";
+    result += messageid;
+    result += ", contentType: ";
+    result += contentType;
+
+    result += ", tokenlen: ";
+    result += tokenlen;	
+
+    if(token) {
+        result += ", token: ";
+        result += (char *)token;
+    }
+
+    result += ", payloadlen: ";
+    result += payloadlen;
+
+    if(payload) {
+        result += ", payload: ";
+        result += (char *)payload;
+    }
+
+    result += ", querylen: ";
+    result += querylen;
+
+    if(query) {
+        result += ", query: ";
+        result += (char *)query;
+    }
+
+    return result;
+}
+
 Coap::Coap(
     UDP& udp
 ) {
@@ -61,8 +101,11 @@ bool Coap::start() {
 }
 
 bool Coap::start(int port) {
-    _udp->begin(port);
-    return true;
+    return _udp->begin(port);
+}
+
+void Coap::stop() {
+    _udp->stop();
 }
 
 uint16_t Coap::sendPacket(CoapPacket &packet, IPAddress ip) {
@@ -143,14 +186,21 @@ uint16_t Coap::sendPacket(CoapPacket &packet, const IPAddress &ip, int port) {
 
     if(udpOperationStatus)
         udpOperationStatus &= (_udp->write(buffer, packetSize) == packetSize);
+    else
+        Serial.println("Begin packet failed");
 
     if(udpOperationStatus) 
         udpOperationStatus &= _udp->endPacket();
+    else
+        Serial.println("Write bytes failed");
 
     if(udpOperationStatus)
         return packet.messageid;
-    else
+    else 
+    {
+        Serial.println("End packet failed");
         return 0;
+    }
 }
 
 uint16_t Coap::get(const IPAddress &ip, int port, const char *url) {
