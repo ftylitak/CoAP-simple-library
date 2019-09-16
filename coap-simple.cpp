@@ -157,7 +157,9 @@ uint16_t Coap::sendPacket(CoapPacket &packet, const IPAddress &ip, int port) {
             *p++ = ((optdelta - 269) >> 8);
             *p++ = (0xFF & (optdelta - 269));
             packetSize+=2;
-        } if (len == 13) {
+        } 
+        
+        if (len == 13) {
             *p++ = (packet.options[i].length - 13);
             packetSize++;
         } else if (len == 14) {
@@ -264,12 +266,12 @@ uint16_t Coap::sendEx(const IPAddress &ip, int port, const char *url, CoapPacket
     packet.setUriHost(ip);
     packet.setUriPath(url);
 
-    	uint8_t optionBuffer[2] {0};
-	if (packet.contentType != COAP_NONE) {
-		optionBuffer[0] = ((uint16_t)packet.contentType & 0xFF00) >> 8;
-		optionBuffer[1] = ((uint16_t)packet.contentType & 0x00FF) ;
-		packet.addOption(COAP_CONTENT_FORMAT, 2, optionBuffer);
-	}
+    uint8_t optionBuffer[2] {0};
+    if (packet.contentType != COAP_NONE) {
+        optionBuffer[0] = ((uint16_t)packet.contentType & 0xFF00) >> 8;
+        optionBuffer[1] = ((uint16_t)packet.contentType & 0x00FF) ;
+        packet.addOption(COAP_CONTENT_FORMAT, 2, optionBuffer);
+    }
 
     if(packet.query && packet.querylen > 0) {
         packet.addOption(COAP_URI_QUERY, packet.querylen, packet.query);
@@ -331,13 +333,13 @@ bool Coap::loop() {
     while (packetlen > 0) {
         packetlen = _udp->read(buffer, packetlen >= BUF_MAX_SIZE ? BUF_MAX_SIZE : packetlen);
 
-        CoapPacket packet;
-
         // parse coap packet header
         if (packetlen < COAP_HEADER_SIZE || (((buffer[0] & 0xC0) >> 6) != 1)) {
             packetlen = _udp->parsePacket();
             continue;
         }
+
+        CoapPacket packet;
 
         packet.type = (buffer[0] & 0x30) >> 4;
         packet.tokenlen = buffer[0] & 0x0F;
@@ -429,7 +431,7 @@ uint16_t Coap::sendResponse(const IPAddress &ip, int port, uint16_t messageid, c
 
 
 uint16_t Coap::sendResponse(const IPAddress &ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen,
-                COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE type, uint8_t *token, int tokenlen) {
+                COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE contentType, uint8_t *token, int tokenlen) {
     // make packet
     CoapPacket packet;
 
@@ -444,8 +446,8 @@ uint16_t Coap::sendResponse(const IPAddress &ip, int port, uint16_t messageid, c
 
     // if more options?
     uint8_t optionBuffer[2] = {0};
-    optionBuffer[0] = ((uint16_t)type & 0xFF00) >> 8;
-    optionBuffer[1] = ((uint16_t)type & 0x00FF) ;
+    optionBuffer[0] = ((uint16_t)contentType & 0xFF00) >> 8;
+    optionBuffer[1] = ((uint16_t)contentType & 0x00FF) ;
 	packet.addOption(COAP_CONTENT_FORMAT, 2, optionBuffer);
 
     return sendPacket(packet, ip, port);

@@ -190,7 +190,7 @@ class Coap {
         uint16_t sendResponse(const IPAddress &ip, int port, uint16_t messageid);
         uint16_t sendResponse(const IPAddress &ip, int port, uint16_t messageid, char *payload);
         uint16_t sendResponse(const IPAddress &ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen);
-        uint16_t sendResponse(const IPAddress &ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen, COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE type, uint8_t *token, int tokenlen);
+        uint16_t sendResponse(const IPAddress &ip, int port, uint16_t messageid, char *payload, uint16_t payloadlen, COAP_RESPONSE_CODE code, COAP_CONTENT_TYPE contentType, uint8_t *token, int tokenlen);
         
         uint16_t get(const IPAddress &ip, int port, const char *url);
         uint16_t put(const IPAddress &ip, int port, const char *url, char *payload);
